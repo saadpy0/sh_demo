@@ -1,0 +1,15 @@
+catalog_pdfs
+.venv-catalog
+.next
+node_modules
+.data
+.git
+*.pdf
+.env.local
+.env*
+tsconfig.tsbuildinfo
+public/qr
+AGENTS.md
+CLAUDE.md
+scripts
+supabase
