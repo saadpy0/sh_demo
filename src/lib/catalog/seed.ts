@@ -1,4 +1,8 @@
+import { readFileSync } from "fs"
+import { gunzipSync } from "zlib"
+import path from "path"
 import { DEFAULT_CURRENCY } from "@/lib/locale/india"
+import { productImageUrl } from "./product-image"
 import { expandCatalogPrice, splitColorGroup } from "./split-options"
 import type { CatalogPrice, CatalogProduct, FilterOptions, SizeOption } from "./types"
 
@@ -53,7 +57,13 @@ const EMPTY_SEED: CatalogSeed = {
 let cached: CatalogSeed | null = null
 
 export function loadSeed(): CatalogSeed {
-  if (!cached) cached = EMPTY_SEED
+  if (cached) return cached
+  try {
+    const file = readFileSync(path.join(process.cwd(), "data", "catalog-seed.json.gz"))
+    cached = JSON.parse(gunzipSync(file).toString("utf8")) as CatalogSeed
+  } catch {
+    cached = EMPTY_SEED
+  }
   return cached
 }
 
@@ -100,7 +110,7 @@ export function hydrateProduct(
     collection: collection?.name ?? null,
     supplier: supplier?.name ?? "",
     catalog: catalog?.name ?? "",
-    imageUrl: null,
+    imageUrl: productImageUrl(supplier?.name ?? "", product.code),
     prices: prices.flatMap(expandCatalogPrice),
     minPrice: numeric.length ? Math.min(...numeric) : null,
     maxPrice: numeric.length ? Math.max(...numeric) : null,

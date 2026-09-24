@@ -8,6 +8,7 @@
     "start": "next start",
     "catalog:import": "node --env-file=.env.local scripts/import-catalog.mjs",
     "catalog:filter": "node scripts/filter-catalog-seed.mjs",
+    "catalog:build:ebco": "node scripts/build-ebco-seed.mjs",
     "catalog:images:laksh": ".venv-catalog/bin/python scripts/extract-laksh-images.py",
     "catalog:images:decor": ".venv-catalog/bin/python scripts/extract-decor-images.py",
     "catalog:images:aura": ".venv-catalog/bin/python scripts/extract-aura-images.py",
