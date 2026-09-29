@@ -3,8 +3,7 @@ import yaleImageKeys from "./yale-image-keys.json"
 import hettichImageKeys from "./hettich-image-keys.json"
 
 // Each manifest maps a product code to the filename (no extension) that
-// actually holds its photo in public/catalog/<slug>/ — resolved once at
-// catalogue-build time in scripts/build-catalog-seed.mjs.
+// actually holds its photo in public/catalog/<slug>/ — same path in Storage.
 const MANIFESTS: Record<string, Record<string, string>> = {
   ebco: ebcoImageKeys as Record<string, string>,
   yale: yaleImageKeys as Record<string, string>,
@@ -19,9 +18,18 @@ function slugify(supplier: string) {
     .replace(/(^-|-$)/g, "")
 }
 
-/** Product photos are added with each new catalogue import. */
+function storagePublicBase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "")
+  if (!url) return null
+  return `${url}/storage/v1/object/public/catalog`
+}
+
+/** Product photos: Supabase Storage when connected, else local /catalog files. */
 export function productImageUrl(supplier: string, code: string) {
   const slug = slugify(supplier)
   const stem = MANIFESTS[slug]?.[code]
-  return stem ? `/catalog/${slug}/${stem}.jpg` : null
+  if (!stem) return null
+  const file = `${slug}/${stem}.jpg`
+  const remote = storagePublicBase()
+  return remote ? `${remote}/${file}` : `/catalog/${file}`
 }

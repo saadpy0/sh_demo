@@ -96,9 +96,8 @@ export async function searchCatalog(params: SearchParams): Promise<SearchResult>
   if (!client) return searchSeed(params)
 
   const q = params.q?.trim() ?? ""
-  if (!ALLOWED_CATALOG_IDS.length) {
-    return { total: 0, results: [], query: q, source: "supabase" }
-  }
+  if (!ALLOWED_CATALOG_IDS.length) return searchSeed(params)
+
   const limit = params.limit ?? 40
   const offset = params.offset ?? 0
   let query = client.from("products").select(
@@ -153,8 +152,11 @@ export async function searchCatalog(params: SearchParams): Promise<SearchResult>
     })
   }
 
+  const total = count ?? products.length
+  if (!total) return searchSeed(params)
+
   return {
-    total: count ?? products.length,
+    total,
     results: products,
     query: q,
     source: "supabase",
@@ -169,9 +171,7 @@ export async function catalogFilters(params: {
   const client = supabase()
   if (!client) return filtersSeed(params)
 
-  if (!ALLOWED_CATALOG_IDS.length) {
-    return { suppliers: [], categories: [], collections: [], finishes: [], sizes: [] }
-  }
+  if (!ALLOWED_CATALOG_IDS.length) return filtersSeed(params)
 
   const suppliers = [...ACTIVE_SUPPLIER_NAMES]
 
@@ -220,13 +220,15 @@ export async function catalogFilters(params: {
     }
   }
 
-  return {
+  const filters = {
     suppliers,
     categories,
     collections,
     finishes,
     sizes: [...sizeMap.values()].sort((a, b) => a.label.localeCompare(b.label)),
   }
+  if (!categories.length && !collections.length && !finishes.length) return filtersSeed(params)
+  return filters
 }
 
 export async function getProduct(id: number) {

@@ -36,6 +36,16 @@ let seed = JSON.parse(gunzipSync(readFileSync(seedPath)).toString("utf8"))
   const product_prices = seed.product_prices.filter((p) => productIds.has(p.product_id))
   seed = { suppliers, catalogs, categories, collections, products, product_prices }
 }
+
+{
+  const seen = new Set()
+  seed.product_prices = seed.product_prices.filter((p) => {
+    const key = `${p.product_id}||${p.finish}||${p.size_mm || ""}||${p.size_inch || ""}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
 const supabase = createClient(url, key, { auth: { persistSession: false } })
 
 async function insertAll(table, rows, chunk = 400) {

@@ -7,7 +7,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { cn } from "@/lib/utils"
 import {
   BooksIcon,
-  ChartLineIcon,
   CheckCircleIcon,
   DotsThreeOutlineIcon,
   KanbanIcon,
@@ -28,7 +27,6 @@ import { useState, type ReactNode } from "react"
 
 const NAV_FLAT = [
   { href: "/erp", label: "Home", icon: HouseIcon },
-  { href: "/insights", label: "Insights", icon: ChartLineIcon },
   { href: "/library", label: "Catalogue", icon: BooksIcon },
   { href: "/quotes", label: "Quotes", icon: ReceiptIcon },
   { href: "/", label: "Sales board", icon: KanbanIcon },
@@ -39,19 +37,19 @@ const NAV_FLAT = [
 ] as const
 
 const NAV_GROUPS: Array<{ heading: string; items: (typeof NAV_FLAT)[number][] }> = [
-  { heading: "Shop", items: [...NAV_FLAT.slice(0, 4)] },
-  { heading: "Customers", items: [...NAV_FLAT.slice(4)] },
+  { heading: "Shop", items: [...NAV_FLAT.slice(0, 3)] },
+  { heading: "Customers", items: [...NAV_FLAT.slice(3)] },
 ]
 
 const FLOOR_TABS = [
   { href: "/erp", label: "Home", icon: HouseIcon },
   { href: "/library", label: "Items", icon: BooksIcon },
   { href: "/quotes", label: "Quote", icon: ReceiptIcon },
-  { href: "/insights", label: "Insights", icon: ChartLineIcon },
+  { href: "/leads", label: "Enquiries", icon: ListBulletsIcon },
 ] as const
 
 const FLOOR_MORE = NAV_FLAT.filter(
-  (item) => !["/erp", "/library", "/quotes", "/insights"].includes(item.href)
+  (item) => !["/erp", "/library", "/quotes", "/leads"].includes(item.href)
 )
 
 function navActive(pathname: string, href: string) {

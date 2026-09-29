@@ -3,6 +3,7 @@ import { gunzipSync } from "zlib"
 import path from "path"
 import { DEFAULT_CURRENCY } from "@/lib/locale/india"
 import { productImageUrl } from "./product-image"
+import { filterCatalogSeed } from "./scope"
 import { expandCatalogPrice, splitColorGroup } from "./split-options"
 import type { CatalogPrice, CatalogProduct, FilterOptions, SizeOption } from "./types"
 
@@ -60,7 +61,7 @@ export function loadSeed(): CatalogSeed {
   if (cached) return cached
   try {
     const file = readFileSync(path.join(process.cwd(), "data", "catalog-seed.json.gz"))
-    cached = JSON.parse(gunzipSync(file).toString("utf8")) as CatalogSeed
+    cached = filterCatalogSeed(JSON.parse(gunzipSync(file).toString("utf8")) as CatalogSeed)
   } catch {
     cached = EMPTY_SEED
   }

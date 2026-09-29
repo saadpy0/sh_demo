@@ -9,6 +9,7 @@ node_modules
 .env*
 tsconfig.tsbuildinfo
 public/qr
+public/catalog
 AGENTS.md
 CLAUDE.md
 scripts

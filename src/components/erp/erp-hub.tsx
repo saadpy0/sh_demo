@@ -4,7 +4,7 @@ import { useFloor } from "@/components/floor/floor-provider"
 import { Button } from "@/components/ui/button"
 import { STAGE_LABEL } from "@/lib/crm/labels"
 import { useCrm } from "@/lib/crm/store"
-import { BooksIcon, ChartLineIcon, PlusIcon, ReceiptIcon } from "@phosphor-icons/react"
+import { BooksIcon, ListBulletsIcon, PlusIcon, ReceiptIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
@@ -24,7 +24,7 @@ export function ErpHub() {
           <BigJob href="/leads/new" icon={<PlusIcon className="size-7" weight="bold" />} label="New name" hint="Walk-in" />
           <BigJob href="/library" icon={<BooksIcon className="size-7" weight="bold" />} label="Find item" hint="Catalogue" />
           <BigJob href="/quotes" icon={<ReceiptIcon className="size-7" weight="bold" />} label="Make quote" hint="Prices" />
-          <BigJob href="/insights" icon={<ChartLineIcon className="size-7" weight="bold" />} label="Insights" hint="Trends" />
+          <BigJob href="/leads" icon={<ListBulletsIcon className="size-7" weight="bold" />} label="Enquiries" hint="Pipeline" />
         </div>
 
         <section>
@@ -145,8 +145,8 @@ export function ErpHub() {
         <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/library" />}>
           Catalogue
         </Button>
-        <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/insights" />}>
-          Insights
+        <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/leads" />}>
+          Enquiries
         </Button>
         <Button size="sm" nativeButton={false} render={<Link href="/leads/new" />}>
           New enquiry
