@@ -173,7 +173,7 @@ export function LeadCaptureForm() {
         <Button type="submit" className="min-h-12 text-base">
           Save
         </Button>
-        <Button type="button" variant="outline" className="min-h-12" onClick={() => router.push("/erp")}>
+        <Button type="button" variant="outline" className="min-h-12" onClick={() => router.push("/library")}>
           Cancel
         </Button>
       </div>

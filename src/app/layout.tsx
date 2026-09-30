@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full bg-background text-foreground">
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme")||"light";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var e=document.documentElement;e.classList.remove("light","dark");e.classList.add(r);e.style.colorScheme=r;var m=localStorage.getItem("shw-ui-mode")||localStorage.getItem("bth-ui-mode");if(m!=="desk"&&m!=="phone"){m=window.matchMedia("(max-width:768px)").matches?"phone":"desk";}e.setAttribute("data-floor",m);}catch(err){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("theme")||"light";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;var e=document.documentElement;e.classList.remove("light","dark");e.classList.add(r);e.style.colorScheme=r;e.setAttribute("data-floor","desk");var gen="3";if(localStorage.getItem("shw-book-gen")!==gen){var drop=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&/^(shw-crm|bth-crm|shw-cart|bth-cart|shw-quote-lead|bth-quote-lead)/.test(k))drop.push(k);}drop.forEach(function(k){localStorage.removeItem(k);});localStorage.setItem("shw-book-gen",gen);}}catch(err){}})();`,
           }}
         />
         <Providers>{children}</Providers>

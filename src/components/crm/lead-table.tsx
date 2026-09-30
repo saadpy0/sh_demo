@@ -97,7 +97,7 @@ export function LeadTable() {
           ))}
           {rows.length === 0 ? (
             <li className="rounded-2xl border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-              No matches. Add a new enquiry from Home.
+              No matches. Add a new enquiry from Enquiries.
             </li>
           ) : null}
         </ul>

@@ -6,6 +6,7 @@ import { COMPANY } from "@/lib/catalog/company"
 import { formatQuotationDate } from "@/lib/catalog/format-date"
 import { formatListPrice } from "@/lib/catalog/money"
 import { numberToWordsINR } from "@/lib/catalog/number-words"
+import { productImageUrl, productImageUrlForCode } from "@/lib/catalog/product-image"
 import type { Party, Quotation } from "@/lib/catalog/types"
 import { cn } from "@/lib/utils"
 import { useEffect, useLayoutEffect, useState } from "react"
@@ -87,7 +88,7 @@ export function ProformaInvoiceSheet({ quotation }: { quotation: Quotation }) {
   const hideDiscount = quotation.hideDiscount
   const itemsSubtotal = quotation.items.reduce((sum, item) => sum + item.lineAmount, 0)
   const packaging = quotation.packagingForwarding || 0
-  const footerSpan = hideDiscount ? 6 : 7
+  const footerSpan = hideDiscount ? 7 : 8
 
   return (
     <div className="invoice-sheet">
@@ -140,6 +141,7 @@ export function ProformaInvoiceSheet({ quotation }: { quotation: Quotation }) {
         <thead>
           <tr>
             <th>Sl No.</th>
+            <th>Image</th>
             <th>Description of Goods</th>
             <th>HSN/SAC</th>
             <th className="num">Quantity</th>
@@ -157,9 +159,21 @@ export function ProformaInvoiceSheet({ quotation }: { quotation: Quotation }) {
               item.collection ? `— ${item.collection}` : "",
               `(${item.exactFinish || item.finish}${item.size ? `, ${item.size}` : ""}${item.color ? `, ${item.color}` : ""})`,
             ].filter(Boolean)
+            const imageSrc =
+              item.imageUrl ||
+              productImageUrl(item.supplier || "", item.code) ||
+              productImageUrlForCode(item.code)
             return (
               <tr key={`${item.code}-${index}`}>
                 <td>{index + 1}</td>
+                <td className="invoice-item-image">
+                  {imageSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={imageSrc} alt="" />
+                  ) : (
+                    <span className="invoice-item-image-empty">—</span>
+                  )}
+                </td>
                 <td>
                   <div>{item.itemName}</div>
                   <div>{specParts.join(" ")}</div>

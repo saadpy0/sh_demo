@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { filtersSeed, productSeed, searchSeed, suppliersSeed } from "./search-seed"
-import { productImageUrl } from "./product-image"
+import { productImageUrl, productImageUrlForCode } from "./product-image"
 import { sizeLabel, uniqueSorted } from "./seed"
 import { expandCatalogPrice, splitColorGroup, splitFinishGroup, splitSizeGroup } from "./split-options"
 import type {
@@ -284,6 +284,7 @@ function shapeQuote(
     discountPct: Number(item.discount_pct),
     gstPct: Number(item.gst_pct),
     lineAmount: Number(item.line_amount),
+    imageUrl: productImageUrlForCode(item.code as string),
   }))
   return {
     id: header.id as number,
@@ -308,14 +309,17 @@ function shapeQuote(
   }
 }
 
+function nextShVoucher(last?: string) {
+  const digits = last?.match(/(\d+)$/)?.[1]
+  const n = digits ? Number(digits) + 1 : 1001
+  return `SH-${n}`
+}
+
 export async function nextVoucher() {
   const client = supabase()
   if (!client) {
     const local = readLocalQuotes()
-    const last = local.at(-1)?.voucherNo
-    if (!last) return "BTH-1001"
-    const n = Number(last.replace(/\D/g, "")) + 1
-    return `BTH-${n}`
+    return nextShVoucher(local.at(-1)?.voucherNo)
   }
   const { data } = await client
     .from("quotations")
@@ -323,9 +327,16 @@ export async function nextVoucher() {
     .order("id", { ascending: false })
     .limit(1)
   const last = data?.[0]?.voucher_no as string | undefined
-  if (!last) return "BTH-1001"
-  const digits = last.match(/(\d+)$/)?.[1] || "1000"
-  return `${last.slice(0, last.length - digits.length)}${String(Number(digits) + 1).padStart(digits.length, "0")}`
+  return nextShVoucher(last)
+}
+
+export async function clearAllQuotations() {
+  const client = supabase()
+  writeLocalQuotes([])
+  if (!client) return { source: "local" as const }
+  const { error } = await client.from("quotations").delete().gte("id", 0)
+  if (error) throw error
+  return { source: "supabase" as const }
 }
 
 function summaryFromQuote(quote: Quotation): QuotationSummary {
@@ -481,7 +492,7 @@ export async function createQuotation(input: QuotationInput): Promise<Quotation>
       packagingForwarding: input.packagingForwarding,
       shipTo,
       billTo,
-      items: items.map((item) => ({
+      items: items.map((item, index) => ({
         productId: item.product_id,
         code: item.code,
         itemName: item.item_name,
@@ -497,6 +508,8 @@ export async function createQuotation(input: QuotationInput): Promise<Quotation>
         discountPct: item.discount_pct,
         gstPct: item.gst_pct,
         lineAmount: item.line_amount,
+        supplier: input.items[index]?.supplier,
+        imageUrl: input.items[index]?.imageUrl || productImageUrlForCode(item.code),
       })),
       grandTotal: roundMoney(
         items.reduce((sum, item) => sum + item.line_amount, 0) + input.packagingForwarding

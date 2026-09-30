@@ -10,7 +10,7 @@ import {
 import { normalizeIndianCity, normalizeIndianPhone } from "@/lib/locale/india"
 import { nextAccountId, nextQuoteNumber, nextTicket } from "./format"
 import { segmentFromTrade, stageMoveBlock } from "./labels"
-import { SEED } from "./seed"
+import { EMPTY_CRM } from "./seed"
 import type {
   Account,
   Activity,
@@ -25,8 +25,83 @@ import type {
   Quote,
 } from "./types"
 
-const KEY = "shw-crm-v4"
-const LEGACY_KEYS = ["bth-crm-v4", "bth-crm-v3", "bth-crm-v2", "bth-crm-v1"] as const
+const KEY = "shw-crm-v6"
+const BOOK_GEN_KEY = "shw-book-gen"
+const BOOK_GEN = "3"
+
+const DEMO_LEAD_IDS = new Set([
+  "ld-01",
+  "ld-02",
+  "ld-03",
+  "ld-04",
+  "ld-05",
+  "ld-06",
+  "ld-07",
+  "ld-08",
+  "ld-09",
+  "ld-10",
+  "ld-11",
+  "ld-12",
+])
+const DEMO_ACCOUNT_IDS = new Set([
+  "ac-01",
+  "ac-02",
+  "ac-03",
+  "ac-04",
+  "ac-05",
+  "ac-06",
+  "ac-07",
+  "ac-08",
+])
+const DEMO_QUOTE_IDS = new Set(["qt-01", "qt-02", "qt-03", "qt-04"])
+const DEMO_FOLLOW_UP_IDS = new Set(["fu-01", "fu-02", "fu-03"])
+
+function wipeBrowserCrm() {
+  if (typeof window === "undefined") return
+  const drop: string[] = []
+  for (let i = 0; i < window.localStorage.length; i++) {
+    const key = window.localStorage.key(i)
+    if (!key) continue
+    if (
+      /^(shw-crm|bth-crm|shw-cart|bth-cart|shw-quote-lead|bth-quote-lead)/.test(key)
+    ) {
+      drop.push(key)
+    }
+  }
+  drop.forEach((key) => window.localStorage.removeItem(key))
+}
+
+function stripDemo(parsed: CrmSnapshot): CrmSnapshot {
+  const leads = (parsed.leads || []).filter((lead) => !DEMO_LEAD_IDS.has(lead.id))
+  const leadIds = new Set(leads.map((lead) => lead.id))
+  const accounts = (parsed.accounts || []).filter(
+    (account) => !DEMO_ACCOUNT_IDS.has(account.id) && (!account.sourceLeadId || leadIds.has(account.sourceLeadId))
+  )
+  const accountIds = new Set(accounts.map((account) => account.id))
+  return {
+    ...parsed,
+    staff: EMPTY_CRM.staff,
+    leads,
+    accounts,
+    quotes: (parsed.quotes || []).filter(
+      (quote) =>
+        !DEMO_QUOTE_IDS.has(quote.id) &&
+        leadIds.has(quote.leadId) &&
+        (!quote.accountId || accountIds.has(quote.accountId))
+    ),
+    activities: (parsed.activities || []).filter(
+      (activity) =>
+        (!activity.leadId || leadIds.has(activity.leadId)) &&
+        (!activity.accountId || accountIds.has(activity.accountId))
+    ),
+    followUps: (parsed.followUps || []).filter(
+      (item) =>
+        !DEMO_FOLLOW_UP_IDS.has(item.id) &&
+        (!item.leadId || leadIds.has(item.leadId)) &&
+        (!item.accountId || accountIds.has(item.accountId))
+    ),
+  }
+}
 
 function migrate(parsed: CrmSnapshot): CrmSnapshot {
   const leads = (parsed.leads || []).map((lead) => ({
@@ -74,37 +149,36 @@ function migrate(parsed: CrmSnapshot): CrmSnapshot {
 }
 
 function load(): CrmSnapshot {
-  if (typeof window === "undefined") return SEED
+  if (typeof window === "undefined") return EMPTY_CRM
   try {
-    let raw: string | null = null
-    let rawKey: string | null = null
-    for (const key of [KEY, ...LEGACY_KEYS]) {
-      const value = window.localStorage.getItem(key)
-      if (value) {
-        raw = value
-        rawKey = key
-        break
-      }
+    if (window.localStorage.getItem(BOOK_GEN_KEY) !== BOOK_GEN) {
+      wipeBrowserCrm()
+      window.localStorage.setItem(BOOK_GEN_KEY, BOOK_GEN)
+      return EMPTY_CRM
     }
-    if (!raw) return SEED
+    const raw = window.localStorage.getItem(KEY)
+    if (!raw) return EMPTY_CRM
     const parsed = JSON.parse(raw) as CrmSnapshot
-    if (!parsed.leads?.length) return SEED
-    const migrated = migrate(parsed)
-    const needsSave = rawKey !== KEY || JSON.stringify(migrated) !== JSON.stringify(parsed)
-    if (needsSave) {
-      window.localStorage.setItem(KEY, JSON.stringify(migrated))
-      for (const legacy of LEGACY_KEYS) {
-        if (legacy !== rawKey) window.localStorage.removeItem(legacy)
-      }
-      if (rawKey && rawKey !== KEY) window.localStorage.removeItem(rawKey)
-    }
+    const migrated = stripDemo(
+      migrate({
+        ...EMPTY_CRM,
+        ...parsed,
+        staff: EMPTY_CRM.staff,
+        leads: parsed.leads || [],
+        activities: parsed.activities || [],
+        quotes: parsed.quotes || [],
+        accounts: parsed.accounts || [],
+        followUps: parsed.followUps || [],
+      })
+    )
+    window.localStorage.setItem(KEY, JSON.stringify(migrated))
     return migrated
   } catch {
-    return SEED
+    return EMPTY_CRM
   }
 }
 
-let snapshot: CrmSnapshot = SEED
+let snapshot: CrmSnapshot = EMPTY_CRM
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -112,9 +186,9 @@ function emit() {
 }
 
 function persist(next: CrmSnapshot) {
-  snapshot = next
+  snapshot = stripDemo(next)
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(KEY, JSON.stringify(next))
+    window.localStorage.setItem(KEY, JSON.stringify(snapshot))
   }
   emit()
 }
@@ -485,7 +559,7 @@ export function searchAccounts(query: string, segment?: CustomerSegment | "all")
 
 
 export function resetDemo() {
-  persist(SEED)
+  persist(EMPTY_CRM)
 }
 
 function hydrate() {
@@ -493,10 +567,10 @@ function hydrate() {
   emit()
 }
 
-const CrmContext = createContext<CrmSnapshot>(SEED)
+const CrmContext = createContext<CrmSnapshot>(EMPTY_CRM)
 
 export function CrmProvider({ children }: { children: ReactNode }) {
-  const data = useSyncExternalStore(subscribe, getSnapshot, () => SEED)
+  const data = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_CRM)
   const value = useMemo(() => data, [data])
   return <CrmContext.Provider value={value}>{children}</CrmContext.Provider>
 }

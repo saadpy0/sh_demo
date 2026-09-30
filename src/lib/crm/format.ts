@@ -53,10 +53,10 @@ export function nextTicket(existing: string[]) {
 
 export function nextQuoteNumber(existing: string[]) {
   const nums = existing
-    .map((n) => Number(n.replace("Q-", "")))
+    .map((n) => Number(n.replace(/^(SH|Q|BTH)-/i, "")))
     .filter((n) => Number.isFinite(n))
-  const next = (Math.max(2400, ...nums) + 1).toString()
-  return `Q-${next}`
+  const next = (Math.max(1000, ...nums) + 1).toString()
+  return `SH-${next}`
 }
 
 export function nextAccountId(existing: string[]) {

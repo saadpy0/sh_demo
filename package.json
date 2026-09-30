@@ -13,6 +13,7 @@
     "catalog:images:laksh": ".venv-catalog/bin/python scripts/extract-laksh-images.py",
     "catalog:images:decor": ".venv-catalog/bin/python scripts/extract-decor-images.py",
     "catalog:images:aura": ".venv-catalog/bin/python scripts/extract-aura-images.py",
+    "quotes:reset": "node --env-file=.env.local scripts/reset-quotes.mjs",
     "qr:generate": "node scripts/generate-sku-qrs.mjs"
   },
   "dependencies": {

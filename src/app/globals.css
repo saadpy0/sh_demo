@@ -443,6 +443,26 @@ html[data-floor="phone"] .proforma-print-root .invoice-sheet {
   text-align: right;
 }
 
+.invoice-item-image {
+  width: 4.25rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+  .invoice-item-image img {
+    display: block;
+    width: 3.4rem;
+    height: 3.4rem;
+    margin: 0 auto;
+    object-fit: contain;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+.invoice-item-image-empty {
+  color: #888;
+}
+
 .invoice-words-row {
   display: flex;
   justify-content: space-between;

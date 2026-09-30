@@ -33,3 +33,11 @@ export function productImageUrl(supplier: string, code: string) {
   const remote = storagePublicBase()
   return remote ? `${remote}/${file}` : `/catalog/${file}`
 }
+
+export function productImageUrlForCode(code: string) {
+  for (const supplier of ["Ebco", "Yale", "Hettich"]) {
+    const url = productImageUrl(supplier, code)
+    if (url) return url
+  }
+  return null
+}

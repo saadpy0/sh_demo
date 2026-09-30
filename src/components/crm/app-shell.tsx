@@ -1,14 +1,11 @@
 "use client"
 
-import { FloorToggle } from "@/components/floor/floor-toggle"
-import { useFloor } from "@/components/floor/floor-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import {
   BooksIcon,
   CheckCircleIcon,
-  DotsThreeOutlineIcon,
   KanbanIcon,
   ListBulletsIcon,
   ListIcon,
@@ -16,17 +13,15 @@ import {
   PlusIcon,
   ReceiptIcon,
   SunIcon,
-  HouseIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "@/components/theme-provider"
-import { BRAND, FLOOR_PHONE_ID } from "@/lib/brand"
+import { BRAND } from "@/lib/brand"
 import { useState, type ReactNode } from "react"
 
 const NAV_FLAT = [
-  { href: "/erp", label: "Home", icon: HouseIcon },
   { href: "/library", label: "Catalogue", icon: BooksIcon },
   { href: "/quotes", label: "Quotes", icon: ReceiptIcon },
   { href: "/", label: "Sales board", icon: KanbanIcon },
@@ -37,20 +32,9 @@ const NAV_FLAT = [
 ] as const
 
 const NAV_GROUPS: Array<{ heading: string; items: (typeof NAV_FLAT)[number][] }> = [
-  { heading: "Shop", items: [...NAV_FLAT.slice(0, 3)] },
-  { heading: "Customers", items: [...NAV_FLAT.slice(3)] },
+  { heading: "Shop", items: [...NAV_FLAT.slice(0, 2)] },
+  { heading: "Customers", items: [...NAV_FLAT.slice(2)] },
 ]
-
-const FLOOR_TABS = [
-  { href: "/erp", label: "Home", icon: HouseIcon },
-  { href: "/library", label: "Items", icon: BooksIcon },
-  { href: "/quotes", label: "Quote", icon: ReceiptIcon },
-  { href: "/leads", label: "Enquiries", icon: ListBulletsIcon },
-] as const
-
-const FLOOR_MORE = NAV_FLAT.filter(
-  (item) => !["/erp", "/library", "/quotes", "/leads"].includes(item.href)
-)
 
 function navActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/"
@@ -99,7 +83,7 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
 
 function Brand() {
   return (
-    <Link href="/erp" className="flex items-start gap-3 px-1">
+    <Link href="/library" className="flex items-start gap-3 px-1">
       <span className="mt-0.5 grid size-9 place-items-center rounded-md bg-primary font-mono text-[10px] font-semibold tracking-tight text-primary-foreground">
         {BRAND.monogram}
       </span>
@@ -142,7 +126,6 @@ function Rail() {
         <NavLinks />
       </div>
       <div className="space-y-3 px-4 py-4">
-        <FloorToggle />
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Priya Menon</p>
@@ -155,92 +138,6 @@ function Rail() {
   )
 }
 
-function PhoneShell({
-  title,
-  action,
-  children,
-}: {
-  title: string
-  action?: ReactNode
-  children: ReactNode
-}) {
-  const pathname = usePathname()
-  const { overlayHostRef } = useFloor()
-  const [more, setMore] = useState(false)
-  const moreActive = FLOOR_MORE.some((item) => navActive(pathname, item.href))
-
-  return (
-    <div className="floor-stage">
-      <div id={FLOOR_PHONE_ID} className="floor-phone">
-        <header className="floor-top">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {BRAND.name}
-              </p>
-              <h1 className="truncate text-xl font-semibold tracking-tight">{title}</h1>
-            </div>
-            <FloorToggle compact />
-          </div>
-          {action ? <div className="floor-action">{action}</div> : null}
-        </header>
-        <main className="floor-body">{children}</main>
-        <nav className="floor-dock" aria-label="Shop jobs">
-          {FLOOR_TABS.map((item) => {
-            const active =
-              item.href === "/erp"
-                ? pathname === "/erp"
-                : navActive(pathname, item.href)
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn("floor-dock-item", active && "is-on")}
-              >
-                <Icon weight={active ? "fill" : "regular"} className="size-6" />
-                {item.label}
-              </Link>
-            )
-          })}
-          <button
-            type="button"
-            className={cn("floor-dock-item", moreActive && "is-on")}
-            onClick={() => setMore(true)}
-          >
-            <DotsThreeOutlineIcon weight={moreActive ? "fill" : "regular"} className="size-6" />
-            More
-          </button>
-        </nav>
-        <Sheet open={more} onOpenChange={setMore}>
-          <SheetContent side="bottom" className="max-h-[80%] rounded-t-3xl px-4 pb-8">
-            <SheetHeader className="pb-2 text-left">
-              <SheetTitle className="text-xl">More</SheetTitle>
-            </SheetHeader>
-            <div className="grid grid-cols-2 gap-2">
-              {FLOOR_MORE.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMore(false)}
-                    className="flex min-h-[4.5rem] flex-col justify-center gap-1 rounded-2xl border border-border bg-card px-3 py-3 text-sm font-semibold"
-                  >
-                    <Icon className="size-5 text-primary" />
-                    {item.label}
-                  </Link>
-                )
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
-        <div ref={overlayHostRef} className="floor-layer" />
-      </div>
-    </div>
-  )
-}
-
 export function AppShell({
   title,
   action,
@@ -250,16 +147,7 @@ export function AppShell({
   action?: ReactNode
   children: ReactNode
 }) {
-  const { phone } = useFloor()
   const [open, setOpen] = useState(false)
-
-  if (phone) {
-    return (
-      <PhoneShell title={title} action={action}>
-        {children}
-      </PhoneShell>
-    )
-  }
 
   return (
     <div className="flex min-h-[100dvh] bg-background">
@@ -279,16 +167,8 @@ export function AppShell({
             </Button>
             <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="hidden sm:block">
-              <FloorToggle compact />
-            </div>
-            {action}
-          </div>
+          <div className="flex shrink-0 items-center gap-2">{action}</div>
         </header>
-        <div className="px-4 pt-3 sm:hidden">
-          <FloorToggle />
-        </div>
         <main className="flex-1 px-4 py-5 lg:px-8 lg:py-6">{children}</main>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -299,9 +179,6 @@ export function AppShell({
           </SheetHeader>
           <div className="px-3 py-2">
             <NavLinks onClick={() => setOpen(false)} />
-          </div>
-          <div className="px-4 py-4">
-            <FloorToggle />
           </div>
         </SheetContent>
       </Sheet>

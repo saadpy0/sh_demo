@@ -3,10 +3,8 @@
 import { readLocalStorageItem } from "@/lib/brand"
 import type { CartItem } from "@/lib/catalog/types"
 
-const KEY = "shw-cart-v2"
-const LEAD_KEY = "shw-quote-lead-v1"
-const LEGACY_KEYS = ["bth-cart-v2"] as const
-const LEGACY_LEAD_KEYS = ["bth-quote-lead-v1"] as const
+const KEY = "shw-cart-v3"
+const LEAD_KEY = "shw-quote-lead-v2"
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -16,7 +14,7 @@ function emit() {
 export function readCart(): CartItem[] {
   if (typeof window === "undefined") return []
   try {
-    return JSON.parse(readLocalStorageItem(KEY, LEGACY_KEYS) || "[]") as CartItem[]
+    return JSON.parse(readLocalStorageItem(KEY, []) || "[]") as CartItem[]
   } catch {
     return []
   }
@@ -62,7 +60,7 @@ export function cartCount() {
 export function readQuoteLeadId(): string {
   if (typeof window === "undefined") return ""
   try {
-    return readLocalStorageItem(LEAD_KEY, LEGACY_LEAD_KEYS) || ""
+    return readLocalStorageItem(LEAD_KEY, []) || ""
   } catch {
     return ""
   }

@@ -74,7 +74,7 @@ export function QuoteBuilder({ initialLeadId = "" }: { initialLeadId?: string })
     setItems(readCart())
     fetch("/api/quotations?next=1")
       .then((res) => res.json())
-      .then((data) => setVoucher(data.voucherNo || "BTH-1001"))
+      .then((data) => setVoucher(data.voucherNo || "SH-1001"))
   }, [])
 
   function persist(next: CartItem[]) {
