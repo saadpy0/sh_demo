@@ -1,7 +1,7 @@
-/** Catalog rows in data/catalog-seed.json.gz (Ebco, Yale, Hettich). */
-export const ALLOWED_CATALOG_IDS = [1, 2, 3] as const
+/** Catalog rows in data/catalog-seed.json.gz (Ebco, Yale, Hettich, Jaquar). */
+export const ALLOWED_CATALOG_IDS = [1, 2, 3, 4] as const
 
-export const ACTIVE_SUPPLIER_NAMES = ["Ebco", "Yale", "Hettich"] as const
+export const ACTIVE_SUPPLIER_NAMES = ["Ebco", "Yale", "Hettich", "Jaquar"] as const
 
 type SeedShape = {
   suppliers: Array<{ id: number; name: string }>

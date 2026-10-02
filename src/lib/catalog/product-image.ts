@@ -1,6 +1,7 @@
 import ebcoImageKeys from "./ebco-image-keys.json"
 import yaleImageKeys from "./yale-image-keys.json"
 import hettichImageKeys from "./hettich-image-keys.json"
+import jaquarImageKeys from "./jaquar-image-keys.json"
 
 // Each manifest maps a product code to the filename (no extension) that
 // actually holds its photo in public/catalog/<slug>/ — same path in Storage.
@@ -8,6 +9,7 @@ const MANIFESTS: Record<string, Record<string, string>> = {
   ebco: ebcoImageKeys as Record<string, string>,
   yale: yaleImageKeys as Record<string, string>,
   hettich: hettichImageKeys as Record<string, string>,
+  jaquar: jaquarImageKeys as Record<string, string>,
 }
 
 function slugify(supplier: string) {
@@ -35,7 +37,7 @@ export function productImageUrl(supplier: string, code: string) {
 }
 
 export function productImageUrlForCode(code: string) {
-  for (const supplier of ["Ebco", "Yale", "Hettich"]) {
+  for (const supplier of ["Ebco", "Yale", "Hettich", "Jaquar"]) {
     const url = productImageUrl(supplier, code)
     if (url) return url
   }

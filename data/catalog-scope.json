@@ -1,5 +1,5 @@
 {
-  "catalogIds": [1, 2, 3],
-  "allowedCatalogIds": [1, 2, 3],
-  "notes": "Ebco (1), Yale (2), Hettich (3) — matches data/catalog-seed.json.gz"
+  "catalogIds": [1, 2, 3, 4],
+  "allowedCatalogIds": [1, 2, 3, 4],
+  "notes": "Ebco (1), Yale (2), Hettich (3), Jaquar (4) — matches data/catalog-seed.json.gz"
 }

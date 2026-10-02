@@ -302,6 +302,77 @@ function buildHettich() {
   return { slug: "hettich", supplier, catalog, categories, collections, products, productPrices }
 }
 
+/** Jaquar: merged from two source documents — a 50-page price list (the MRP/NRP source
+ *  of truth whenever a code exists in both) and the Vol. 22/2026-27 photo catalog
+ *  (collection names, descriptions, and the only source of price for codes the price
+ *  list never carried at all). One CSV row = one real, separately-coded SKU = one
+ *  product with one price row — same shape as Yale, no finish/size grouping needed
+ *  since every finish variant already has its own distinct code. See
+ *  data/jaquar-image-manifest.json for how images were resolved (position-matched
+ *  crops from the catalog PDF, keyed by the exact printed code or its implicit-chrome
+ *  bare form). */
+function buildJaquar() {
+  const rows = readCsvRows(path.join(ROOT, "data", "jaquar.csv"))
+  const supplier = { id: 1, name: "Jaquar" }
+  const catalog = { id: 1, supplier_id: 1, name: "Jaquar Price List" }
+
+  const categoryNames = [...new Set(rows.map((r) => r.category).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b)
+  )
+  const categories = categoryNames.map((name, i) => ({ id: i + 1, catalog_id: 1, name }))
+  const categoryIdByName = new Map(categories.map((c) => [c.name, c.id]))
+
+  const collections = []
+  const collectionIdByKey = new Map()
+  for (const r of rows) {
+    const categoryId = categoryIdByName.get(r.category)
+    const key = `${categoryId}::${r.collection}`
+    if (collectionIdByKey.has(key)) continue
+    const id = collections.length + 1
+    collections.push({ id, catalog_id: 1, category_id: categoryId, name: r.collection })
+    collectionIdByKey.set(key, id)
+  }
+
+  const products = []
+  const productPrices = []
+  let productId = 0
+  let priceId = 0
+
+  for (const r of rows) {
+    const categoryId = categoryIdByName.get(r.category)
+    const collectionId = collectionIdByKey.get(`${categoryId}::${r.collection}`)
+    productId += 1
+    const pid = productId
+    products.push({
+      id: pid,
+      catalog_id: 1,
+      collection_id: collectionId ?? null,
+      code: r.code,
+      item_name: r.item_name,
+      confidence: "high",
+      review_notes: null,
+      size_mm: null,
+      size_inch: null,
+      color_options: null,
+    })
+
+    priceId += 1
+    productPrices.push({
+      id: priceId,
+      product_id: pid,
+      finish: r.finish || "Standard",
+      price: r.price ? Number(r.price) : null,
+      currency: r.currency || "INR",
+      confidence: "high",
+      review_notes: r.notes || null,
+      size_mm: "",
+      size_inch: "",
+    })
+  }
+
+  return { slug: "jaquar", supplier, catalog, categories, collections, products, productPrices }
+}
+
 function mergeBrands(brands) {
   const combined = { suppliers: [], catalogs: [], categories: [], collections: [], products: [], product_prices: [] }
   let supplierBase = 0
@@ -352,7 +423,7 @@ function mergeBrands(brands) {
   return combined
 }
 
-const brands = [buildEbco(), buildYale(), buildHettich()]
+const brands = [buildEbco(), buildYale(), buildHettich(), buildJaquar()]
 const seed = mergeBrands(brands)
 
 writeFileSync(SEED_PATH, gzipSync(JSON.stringify(seed)))
@@ -378,6 +449,12 @@ for (const brand of brands) {
     for (const entry of manifest.matched) {
       map[entry.code] = path.basename(entry.image_path).replace(/\.jpg$/i, "")
     }
+  } else if (brand.slug === "jaquar") {
+    // Authoritative code -> filename map, resolved by position-matching codes to their
+    // photo on the catalog PDF page (see data/jaquar-image-manifest.json).
+    const manifestPath = path.join(ROOT, "data", "jaquar-image-manifest.json")
+    const raw = JSON.parse(readFileSync(manifestPath, "utf8"))
+    map = Object.fromEntries(Object.entries(raw).map(([code, fname]) => [code, fname.replace(/\.(jpe?g|png)$/i, "")]))
   } else {
     map = buildGuessedImageMap(brand.slug, codes)
   }
